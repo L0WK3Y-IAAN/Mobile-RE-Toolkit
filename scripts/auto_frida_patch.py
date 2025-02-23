@@ -48,7 +48,7 @@ FRIDA_VERSION = None
 FRIDA_BASE_URL_TEMPLATE = "https://github.com/frida/frida/releases/download/{version}"
 
 # All build/sign artifacts go in this output folder
-OUTPUT_FOLDER = "output"
+OUTPUT_FOLDER = "src/output"
 # Working folder for apktool within the output directory
 WORKING_FOLDER = os.path.join(OUTPUT_FOLDER, "apk_working")
 
@@ -59,7 +59,7 @@ KEYSTORE_PASS = "my_password"
 KEYTOOL_DNAME = "CN=Test User, OU=Dev, O=MyCompany, L=MyCity, ST=MyState, C=US"
 
 # Color shortcuts
-INFO = Fore.CYAN + Style.BRIGHT
+INFO = Fore.MAGENTA + Style.NORMAL
 SUCCESS = Fore.GREEN + Style.BRIGHT
 WARNING = Fore.YELLOW + Style.BRIGHT
 ERROR = Fore.RED + Style.BRIGHT
