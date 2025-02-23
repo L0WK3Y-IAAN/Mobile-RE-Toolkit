@@ -15,7 +15,7 @@
 [![Stars](https://img.shields.io/github/stars/L0WK3Y-IAAN/Mobile-RE-Toolkit)](https://github.com/L0WK3Y-IAAN/Mobile-RE-Toolkit/stargazers)
 [![Forks](https://img.shields.io/github/forks/L0WK3Y-IAAN/Mobile-RE-Toolkit)](https://github.com/L0WK3Y-IAAN/Mobile-RE-Toolkit/network/members)
 
-A **lightweight** but **powerful** toolkit for mobile reverse engineering, patching Android APKs with Frida Gadget, and more.  
+A **lightweight** but **powerful** toolkit for mobile reverse engineering, patching Android APKs with Frida Gadget, extracting Android backups, and more.  
 *(Code name: “MOBILE-REVERSE ENGINEERING-TOOLKIT” or "MRET")*
 
 ---
@@ -35,6 +35,7 @@ A **lightweight** but **powerful** toolkit for mobile reverse engineering, patch
 
 ## Features
 
+- **Android Backup Extractor** - Extracts contents from ```ab``` files.
 - **Frida Gadget Injection** – Dynamically download & inject Frida Gadget for various architectures.  
 - **APK Tooling** – Decompile, rebuild, and sign Android APKs automatically.  
 - **Scripted Workflows** – Convenient Python scripts for automating repetitive tasks.  
