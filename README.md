@@ -26,7 +26,7 @@ A **lightweight** but **powerful** toolkit for mobile reverse engineering, patch
 
 ---
 
-## Features
+## Current Features
 
 - **Android Backup Extractor** - Extracts contents from ```ab``` files.
 - **Frida Gadget Injection** – Dynamically download & inject Frida Gadget for various architectures.  
