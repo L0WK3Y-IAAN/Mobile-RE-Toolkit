@@ -1,14 +1,3 @@
-Below is an example **Markdown** README template you can use for a **GitHub** repository. It features:
-
-- An **ASCII banner** for style.  
-- **Badges** (shields.io) placeholders.  
-- A neat **Table of Contents**.  
-- **Usage** instructions, examples, and disclaimers.
-
-Feel free to **customize** it for your project—change the name, add links, images, or more sections as you see fit.
-
----
-
 ```
 ███╗   ███╗   ██████╗    ███████╗████████╗
 ████╗ ████║   ██╔══██╗   ██╔════╝╚══██╔══╝
