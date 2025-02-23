@@ -3,6 +3,7 @@
 # Script by L0WK3Y
 # https://github.com/L0WK3Y-IAAN
 # ---------------------------------------------------------------------------
+
 import os
 import sys
 import struct
@@ -22,7 +23,7 @@ init(autoreset=True)
 INFO = Fore.MAGENTA + Style.NORMAL
 SUCCESS = Fore.GREEN + Style.BRIGHT
 WARNING = Fore.YELLOW + Style.BRIGHT
-ERROR = Fore.RED + Style.BRIGHT
+ERROR = Fore.RED + Style.NORMAL
 RESET = Style.RESET_ALL
 
 # Output folder for extracted backups

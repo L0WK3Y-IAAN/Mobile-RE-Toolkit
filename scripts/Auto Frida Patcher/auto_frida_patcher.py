@@ -62,7 +62,7 @@ KEYTOOL_DNAME = "CN=Test User, OU=Dev, O=MyCompany, L=MyCity, ST=MyState, C=US"
 INFO = Fore.MAGENTA + Style.NORMAL
 SUCCESS = Fore.GREEN + Style.BRIGHT
 WARNING = Fore.YELLOW + Style.BRIGHT
-ERROR = Fore.RED + Style.BRIGHT
+ERROR = Fore.RED + Style.NORMAL
 RESET = Style.RESET_ALL
 
 # -----------------------------------------------------------------------------
