@@ -17,7 +17,7 @@ Feel free to **customize** it for your project—change the name, add links, ima
 ██║ ╚═╝ ██║██╗██║  ██║██╗███████╗██╗██║   
 ╚═╝     ╚═╝╚═╝╚═╝  ╚═╝╚═╝╚══════╝╚═╝╚═╝    
 ```
-```markdown
+
 
 # Mobile RE Toolkit
 
