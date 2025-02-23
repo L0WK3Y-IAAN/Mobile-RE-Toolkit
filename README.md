@@ -16,7 +16,7 @@
 [![Forks](https://img.shields.io/github/forks/L0WK3Y-IAAN/Mobile-RE-Toolkit)](https://github.com/L0WK3Y-IAAN/Mobile-RE-Toolkit/network/members)
 
 A **lightweight** but **powerful** toolkit for mobile reverse engineering, patching Android APKs with Frida Gadget, and more.  
-*(Code name: “MOBILE-RE-TOOLKIT” or "MRT")*
+*(Code name: “MOBILE-REVERSE ENGINEERING-TOOLKIT” or "MRET")*
 
 ---
 
