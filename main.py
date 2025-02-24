@@ -13,6 +13,7 @@ Modernized version that:
 ✅ Lists Python scripts from "./scripts" with a table.
 ✅ Supports passing arguments with script selection (ex: "3 -o output ./file").
 ✅ Runs scripts in subprocesses, handling KeyboardInterrupts safely.
+✅ Scans for 'WIP' scripts and adds their **directories** to .gitignore.
 """
 
 import os
@@ -26,8 +27,9 @@ import shutil  # For moving files
 # Initialize rich console
 console = Console()
 
-# Path to scripts folder
+# Paths
 SCRIPT_DIR = "./scripts"
+GITIGNORE_PATH = "./.gitignore"
 
 # Banner
 BANNER = r"""
@@ -43,34 +45,64 @@ def prettify_script_name(filename: str) -> str:
     """Removes '.py', replaces underscores with spaces, and capitalizes each word."""
     return filename.replace("_", " ").replace(".py", "").title()
 
-def organize_scripts():
-    """
-    Moves scripts in the 'scripts' folder into subfolders based on their filenames.
-    Example: 'example_script.py' -> 'scripts/Example Script/example_script.py'
-    """
+def scan_wip_script_dirs():
+    """Scans for scripts containing 'WIP' in the filename and adds their parent directories to .gitignore."""
+    wip_dirs = set()
+
     if not os.path.isdir(SCRIPT_DIR):
-        os.makedirs(SCRIPT_DIR)  # Ensure the scripts folder exists
+        return
+
+    for root, _, files in os.walk(SCRIPT_DIR):
+        for file in files:
+            if "WIP" in file and file.endswith(".py"):  # Identify WIP scripts
+                wip_dirs.add(os.path.relpath(root))  # Store the directory
+
+    if wip_dirs:
+        console.print(f"[yellow]⚠ Found {len(wip_dirs)} WIP script directories. Adding to .gitignore...[/]")
+
+        # Ensure .gitignore exists
+        if not os.path.exists(GITIGNORE_PATH):
+            with open(GITIGNORE_PATH, "w") as f:
+                f.write("# Git Ignore File\n")
+
+        # Read existing .gitignore
+        with open(GITIGNORE_PATH, "r") as f:
+            gitignore_lines = set(f.read().splitlines())
+
+        # Add missing WIP directories
+        new_entries = [directory for directory in wip_dirs if directory not in gitignore_lines]
+        if new_entries:
+            with open(GITIGNORE_PATH, "a") as f:
+                f.write("\n# Auto-added WIP script directories\n")
+                f.write("\n".join(new_entries) + "\n")
+            console.print("[green]✅ Updated .gitignore with WIP script directories.[/]")
+        else:
+            console.print("[green]✅ All WIP directories are already in .gitignore.[/]")
+    else:
+        console.print("[cyan]🔍 No WIP scripts found.[/]")
+
+def organize_scripts():
+    """Moves scripts into subfolders based on their filenames."""
+    if not os.path.isdir(SCRIPT_DIR):
+        os.makedirs(SCRIPT_DIR)
 
     for filename in os.listdir(SCRIPT_DIR):
         file_path = os.path.join(SCRIPT_DIR, filename)
 
         if filename.endswith(".py") and os.path.isfile(file_path):
-            script_name = prettify_script_name(filename)  # Convert script name
+            script_name = prettify_script_name(filename)
             dest_folder = os.path.join(SCRIPT_DIR, script_name)
             dest_path = os.path.join(dest_folder, filename)
 
-            # Move script if it's not already inside the correct folder
             if not os.path.exists(dest_folder):
-                os.makedirs(dest_folder)  # Create the folder if it doesn't exist
-            
-            if file_path != dest_path:  # Avoid moving files already in place
+                os.makedirs(dest_folder)
+
+            if file_path != dest_path:  
                 shutil.move(file_path, dest_path)
                 console.print(f"[green]📂 Moved:[/] {filename} → {dest_folder}/")
 
 def list_scripts():
-    """
-    Returns a sorted list of Python scripts from subdirectories within SCRIPT_DIR.
-    """
+    """Returns a sorted list of Python scripts from subdirectories."""
     if not os.path.isdir(SCRIPT_DIR):
         console.print(f"[bold red]❌ Error:[/] 'scripts' folder not found: {SCRIPT_DIR}")
         input("Press Enter to continue...")
@@ -82,7 +114,7 @@ def list_scripts():
             if file.endswith(".py"):
                 scripts.append(os.path.join(root, file))
 
-    scripts.sort()  # Sort alphabetically
+    scripts.sort()
     if not scripts:
         console.print(f"[bold red]❌ Error:[/] No Python scripts found in {SCRIPT_DIR}")
         input("Press Enter to continue...")
@@ -92,7 +124,7 @@ def list_scripts():
 
 def display_menu(scripts):
     """Displays the script selection menu with a rich table."""
-    os.system("cls" if os.name == "nt" else "clear")  # Clear screen
+    os.system("cls" if os.name == "nt" else "clear")
     console.print(f"[bold magenta]{BANNER}[/]\n")
 
     table = Table(title="📜 Available Scripts", show_header=True, header_style="bold magenta")
@@ -110,34 +142,32 @@ def display_menu(scripts):
 
 def main():
     """Main script loop to display menu and execute selected scripts."""
-    organize_scripts()  # Ensure scripts are sorted into folders before running
+    organize_scripts()
+    scan_wip_script_dirs()  # Scan for WIP script directories and update .gitignore
     scripts = list_scripts()
 
     try:
         while True:
             display_menu(scripts)
 
-            # Prompt user for input (allows extra arguments)
             user_input = Prompt.ask("[bold cyan]Enter choice and arguments (ex: 2 -o output)[/]", default="Q").strip()
 
             if user_input.lower() == "q":
-                os.system("cls" if os.name == "nt" else "clear")  # Clear screen
+                os.system("cls" if os.name == "nt" else "clear")
                 console.print("[bold cyan]👋 Goodbye![/]")
                 break
 
-            # Split input into parts: first part is the script number, the rest are args
             parts = user_input.split()
             if not parts or not parts[0].isdigit():
                 console.print("[bold red]⚠ Invalid input. Please enter a valid number followed by optional arguments.[/]")
                 input("Press Enter to continue...")
                 continue
 
-            script_index = int(parts[0])  # Extract script index
-            script_args = parts[1:]  # Extract additional arguments
+            script_index = int(parts[0])
+            script_args = parts[1:]
 
             if not (1 <= script_index <= len(scripts)):
                 console.print("[bold red]⚠ Invalid selection. Please enter a valid number.[/]")
-                continue
 
             script_to_run = scripts[script_index - 1]
 

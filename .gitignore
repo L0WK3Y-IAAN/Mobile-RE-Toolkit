@@ -1,1 +1,5 @@
 .venv
+
+# Auto-added WIP script directories
+scripts\Control Flow Generator Wip
+scripts\Call Graph Builder Wip

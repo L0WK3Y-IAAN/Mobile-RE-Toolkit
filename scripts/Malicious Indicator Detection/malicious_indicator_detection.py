@@ -166,11 +166,11 @@ SUSPICIOUS_INDICATORS = {
 
     # 🚨 **Hidden Asset Decryption**
     "Hidden_Asset_Decryption": [
-        "invoke-virtual {.*}, Ljava/io/InputStream;->read",
-        "invoke-virtual {.*}, Ljava/io/ByteArrayOutputStream;->toByteArray",
-        "invoke-virtual {.*}, Ljava/security/Cipher;->doFinal",
-        "invoke-virtual {.*}, Ljava/security/Cipher;->doFinal",
-        "invoke-virtual {.*}, Ljavax/crypto/spec/SecretKeySpec"
+        "Ljava/io/InputStream;->read",
+        "Ljava/io/ByteArrayOutputStream;->toByteArray",
+        "Ljava/security/Cipher;->doFinal",
+        "Ljava/security/Cipher;->doFinal",
+        "Ljavax/crypto/spec/SecretKeySpec"
     ],
 
     # 🔢 **XOR Obfuscation Detection (Dynamic)**
