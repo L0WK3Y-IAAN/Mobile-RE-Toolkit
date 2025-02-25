@@ -19,7 +19,7 @@ from rich.prompt import Prompt
 
 console = Console()
 
-FRIDA_SCRIPTS_FOLDER = "scripts/Frida Ex Wip/frida scripts"
+FRIDA_SCRIPTS_FOLDER = "scripts/Frida Ex/frida scripts"
 FRIDA_RELEASES_URL = "https://github.com/frida/frida/releases/latest"
 TEMP_DOWNLOAD_PATH = "frida-server.xz"
 EXTRACTED_BIN_PATH = "frida-server"
@@ -27,6 +27,20 @@ EXTRACTED_BIN_PATH = "frida-server"
 # ---------------------------------------------------------------------------
 # Helper Functions
 # ---------------------------------------------------------------------------
+
+def ensure_adb_root():
+    """Ensures ADB is running as root before proceeding."""
+    console.print("[cyan]🔍 Restarting ADB as root...[/]")
+    subprocess.run(["adb", "root"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    time.sleep(2)  # Give some time for ADB to restart
+
+    # Verify if ADB is running as root
+    result = subprocess.run(["adb", "shell", "whoami"], stdout=subprocess.PIPE, text=True)
+    if "root" not in result.stdout.strip():
+        console.print("[red]❌ Failed to restart ADB as root![/]")
+        sys.exit(1)
+    console.print("[green]✅ ADB is now running as root.[/]")
+
 
 def get_connected_devices():
     """Detects connected Frida devices."""
@@ -80,23 +94,26 @@ def start_frida_server(device_id):
     """Attempts to start the Frida server if found on the device."""
     console.print("[cyan]🔍 Checking if Frida server exists in /data/local/tmp...[/]")
 
-    result = subprocess.run(
-        ["adb", "-s", device_id, "shell", "ls", "/data/local/tmp/frida-server"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
+    # Restart adb as root
+    subprocess.run(["adb", "root"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    result = subprocess.run(["adb", "-s", device_id, "shell", "ls", "/data/local/tmp/frida-server"],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     if "frida-server" in result.stdout.strip():
         console.print("[yellow]⚠ Frida server found. Attempting to start it...[/]")
-        subprocess.run(["adb", "-s", device_id, "shell", "nohup", "/data/local/tmp/frida-server", "&"])
+        
+        # Start Frida server properly in the background without freezing the terminal
+        subprocess.run(["adb", "-s", device_id, "shell", "nohup /data/local/tmp/frida-server > /dev/null 2>&1 &"], shell=True)
         time.sleep(3)
 
         if is_frida_running(device_id):
+            console.print("[green]✅ Frida server started successfully![/]")
             return True
 
     console.print("[red]❌ Frida server failed to start![/]")
     return False
+
 
 def ensure_frida_server(device_id):
     """Ensures Frida server is running, installs it if necessary."""
@@ -168,44 +185,11 @@ def select_frida_script():
             return os.path.join(FRIDA_SCRIPTS_FOLDER, scripts[int(choice) - 1])
         console.print("[bold red]⚠ Invalid selection. Try again.[/]")
 
-def launch_frida_shell(device_id, package_name, script_path):
-    """
-    Ensures the package is running and launches the Frida shell.
-    """
-
-    console.print(f"\n[cyan]🚀 Ensuring {package_name} is running before injection...[/]")
-
-    # Get the list of processes from Frida
-    frida_processes = subprocess.run(["frida-ps", "-U"], stdout=subprocess.PIPE, text=True).stdout
-
-    # Check if the process exists
-    process_found = any(package_name in line for line in frida_processes.splitlines())
-
-    if not process_found:
-        console.print("[yellow]⚠ App is NOT detected by Frida. Trying to spawn...[/]")
-
-        # Spawn the app and inject the script
-        spawn_cmd = ["frida", "-U", "-f", package_name, "-l", script_path]
-        subprocess.run(spawn_cmd)
-        console.print("[green]✅ App spawned & Frida script injected successfully![/]")
-
-    else:
-        console.print("[green]✅ App is already running. Attaching Frida...[/]")
-
-        # Attach to the running process instead of spawning
-        attach_cmd = ["frida", "-U", "-n", package_name, "-l", script_path]
-        subprocess.run(attach_cmd)
-
-    console.print("[green]🎉 Injection complete. The app is now running with Frida![/]")
-
-
-
-# ---------------------------------------------------------------------------
-# Main Function
-# ---------------------------------------------------------------------------
-
 def main():
     console.print("\n[bold magenta]🔎 FridaEX Automation Tool 🔍[/]\n")
+
+    # Ensure ADB is running as root first
+    ensure_adb_root()
 
     # 1. Get and select the Frida device
     devices = get_connected_devices()
@@ -225,7 +209,12 @@ def main():
         sys.exit(1)
 
     # 5. Launch Frida interactive shell
-    launch_frida_shell(device_id, chosen_package, script_path)
+    console.print("[cyan]🚀 Launching Frida shell...[/]")
+
+    # Use `-f` to spawn the package properly
+    frida_cmd = ["frida", "-U", "-f", chosen_package, "-l", script_path]
+    subprocess.run(frida_cmd)
+
 
 if __name__ == "__main__":
     main()
