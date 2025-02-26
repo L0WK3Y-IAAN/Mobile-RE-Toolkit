@@ -19,7 +19,7 @@ from rich.prompt import Prompt
 
 console = Console()
 
-FRIDA_SCRIPTS_FOLDER = "scripts/Frida Ex/frida scripts"
+FRIDA_SCRIPTS_FOLDER = "scripts/Frida Script Downloader/scripts"
 FRIDA_RELEASES_URL = "https://github.com/frida/frida/releases/latest"
 TEMP_DOWNLOAD_PATH = "frida-server.xz"
 EXTRACTED_BIN_PATH = "frida-server"
