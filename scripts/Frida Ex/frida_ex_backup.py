@@ -30,32 +30,27 @@ EXTRACTED_BIN_PATH = "frida-server"
 # Helper Functions
 # ---------------------------------------------------------------------------
 
-
 def run_as_root(device_id, *args):
     """
-    Accepts multiple arguments and joins them into one shell command.
-    Example usage:
-        run_as_root(device_id, "pidof", "frida-server")
-        run_as_root(device_id, "chmod", "755", "/data/local/tmp/frida-server")
+    Runs the given args under 'su 0' on the device.
+    Example: run_as_root(device_id, "pidof", "frida-server")
+    => adb -s <device_id> shell su 0 pidof frida-server
     """
-    # Join all args into a single string
-    command_str = " ".join(args)
-    cmd = ["adb", "-s", device_id, "shell", "su", "-c", command_str]
+    cmd = ["adb", "-s", device_id, "shell", "su", "0"] + list(args)
     return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
 
 def is_device_rooted(device_id):
     """
-    Checks if 'su -c "whoami"' returns 'root'. If so, we consider the device rooted.
+    Returns True if 'su -c "whoami"' works and returns 'root',
+    False otherwise.
     """
     console.print("[cyan]🔍 Checking if 'su' works on this device...[/]")
     result = run_as_root(device_id, "whoami")
-    if result and "root" in result.stdout.strip().lower():
+    if "root" in result.stdout.strip().lower():
         console.print("[green]✅ Device can run commands as root (su is working).[/]")
         return True
     console.print("[yellow]⚠ Device is not rooted or 'su' not granted. Proceeding in user mode...[/]")
     return False
-
 
 def get_frida_devices():
     """Detects connected Frida devices (USB or remote)."""
@@ -203,16 +198,13 @@ def download_and_install_frida_server(device_id):
 
 def is_frida_running(device_id):
     console.print("[cyan]🔍 Checking if Frida server is running...[/]")
-    
-    # Use a more reliable check method
-    result = run_as_root(device_id, 'sh -c "ps -A | grep frida-server"')
-    
+    # Now call run_as_root with separate arguments
+    result = run_as_root(device_id, "pidof", "frida-server")
     if result.stdout.strip():
-        console.print(f"[green]✅ Frida server is running: {result.stdout.strip()}[/]")
+        console.print("[green]✅ Frida server is already running.[/]")
         return True
     console.print("[red]❌ Frida server is NOT running.[/]")
     return False
-
 
 def start_frida_server(device_id):
     """
@@ -221,7 +213,6 @@ def start_frida_server(device_id):
     console.print("[cyan]🚀 Attempting to start frida-server...[/]")
     run_as_root(device_id, "chmod +x /data/local/tmp/frida-server")
     run_as_root(device_id, "nohup /data/local/tmp/frida-server > /dev/null 2>&1 &")
-
     time.sleep(3)
     return is_frida_running(device_id)
 
