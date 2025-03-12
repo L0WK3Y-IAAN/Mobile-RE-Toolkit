@@ -18,9 +18,11 @@ Modernized version that:
 
 import os
 import sys
+import re
 import subprocess
 from rich.console import Console
 from rich.table import Table
+from rich import box
 from rich.prompt import Prompt
 import shutil  # For moving files
 
@@ -44,6 +46,21 @@ BANNER = r"""
 def prettify_script_name(filename: str) -> str:
     """Removes '.py', replaces underscores with spaces, and capitalizes each word."""
     return filename.replace("_", " ").replace(".py", "").title()
+
+def get_description_from_readme(folder_path: str) -> str:
+    """
+    Reads the first '**...**' occurrence in a README.md file
+    and returns that text. If no README or no match, return fallback.
+    """
+    readme_path = os.path.join(folder_path, "README.md")
+    if os.path.exists(readme_path):
+        with open(readme_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        # Look for the first occurrence of text within **...**
+        match = re.search(r"\*\*(.*?)\*\*", content)
+        if match:
+            return match.group(1).strip()
+    return "No description found"
 
 def scan_wip_script_dirs():
     """Scans for scripts containing 'WIP' in the filename and adds their parent directories to .gitignore."""
@@ -127,15 +144,23 @@ def display_menu(scripts):
     os.system("cls" if os.name == "nt" else "clear")
     console.print(f"[bold magenta]{BANNER}[/]\n")
 
-    table = Table(title="📜 Available Scripts", show_header=True, header_style="bold magenta")
+    # Enable row lines (show_lines=True) and change box style if you like
+    table = Table(
+        title="📜 Available Scripts",
+        show_header=True,
+        header_style="bold magenta",
+        show_lines=True,               # <-- key to add a line between rows
+        box=box.SIMPLE_HEAVY           # <-- optional: pick a nicer border style
+    )
     table.add_column("Index", justify="center", style="cyan", no_wrap=True)
     table.add_column("Script Name", style="green")
-    table.add_column("Location", style="yellow")
+    table.add_column("Description", style="yellow")
 
     for i, script_path in enumerate(scripts, 1):
         script_name = prettify_script_name(os.path.basename(script_path))
-        script_folder = os.path.basename(os.path.dirname(script_path))
-        table.add_row(str(i), script_name, script_folder)
+        folder_path = os.path.dirname(script_path)
+        description = get_description_from_readme(folder_path)
+        table.add_row(str(i), script_name, description)
 
     console.print(table)
     console.print("[bold yellow][Q] Quit[/]\n")
@@ -168,6 +193,8 @@ def main():
 
             if not (1 <= script_index <= len(scripts)):
                 console.print("[bold red]⚠ Invalid selection. Please enter a valid number.[/]")
+                input("Press Enter to continue...")
+                continue
 
             script_to_run = scripts[script_index - 1]
 

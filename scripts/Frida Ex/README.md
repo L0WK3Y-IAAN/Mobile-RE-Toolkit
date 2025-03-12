@@ -1,7 +1,7 @@
 # FridaEX - Frida Automation Tool 🚀  
 
-## **Overview**
-FridaEX is an automation tool designed to simplify Frida script injection for Android applications. It automatically detects connected devices, manages Frida server installation and execution, lists installed apps, and allows seamless Frida script injection. The tool also provides an **interactive Frida shell** after injection for real-time debugging and analysis.
+
+**FridaEX is an automation tool designed to simplify Frida script injection for Android applications. It automatically detects connected devices, manages Frida server installation and execution, lists installed apps, and allows seamless Frida script injection. The tool also provides an **interactive Frida shell** after injection for real-time debugging and analysis.**
 
 ## **Features**
 ✅ **Automated Device & Process Detection** – Lists connected devices and running processes.  

@@ -239,11 +239,27 @@ def ensure_frida_server(device_id):
         sys.exit(1)
 
 def list_installed_packages(device_id):
-    """Retrieves a list of installed packages from the device."""
+    """
+    Retrieves a list of installed packages from the device.
+    Optionally hides system packages by using 'pm list packages -3'.
+    """
     console.print("[cyan]🔍 Retrieving installed packages...[/]")
-    result = subprocess.run(["adb", "-s", device_id, "shell", "pm", "list", "packages"],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    # Ask if the user wants to hide system packages
+    hide_system = Prompt.ask("[bold cyan]Hide system packages?[/] (y/N)", default="N").strip().lower()
+
+    if hide_system.startswith("y"):
+        # -3 => list only third-party packages
+        pm_command = ["adb", "-s", device_id, "shell", "pm", "list", "packages", "-3"]
+        console.print("[green]Hiding system packages (only showing user-installed apps).[/]")
+    else:
+        # Shows all packages (system + user)
+        pm_command = ["adb", "-s", device_id, "shell", "pm", "list", "packages"]
+
+    result = subprocess.run(pm_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     lines = result.stdout.strip().splitlines()
+
+    # Clean up output by removing 'package:' prefix
     packages = [line.replace("package:", "").strip() for line in lines if line.startswith("package:")]
     return packages
 
