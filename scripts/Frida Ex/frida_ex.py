@@ -30,7 +30,6 @@ EXTRACTED_BIN_PATH = "frida-server"
 # Helper Functions
 # ---------------------------------------------------------------------------
 
-
 def run_as_root(device_id, *args):
     """
     Accepts multiple arguments and joins them into one shell command.
@@ -43,7 +42,6 @@ def run_as_root(device_id, *args):
     cmd = ["adb", "-s", device_id, "shell", "su", "-c", command_str]
     return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-
 def is_device_rooted(device_id):
     """
     Checks if 'su -c "whoami"' returns 'root'. If so, we consider the device rooted.
@@ -55,7 +53,6 @@ def is_device_rooted(device_id):
         return True
     console.print("[yellow]⚠ Device is not rooted or 'su' not granted. Proceeding in user mode...[/]")
     return False
-
 
 def get_frida_devices():
     """Detects connected Frida devices (USB or remote)."""
@@ -142,7 +139,6 @@ def download_frida_server_for_arch(arch):
             download_url = asset["browser_download_url"]
             break
 
-
     if not download_url:
         console.print(f"[red]❌ Could not find a frida-server asset for: {desired_suffix}[/]")
         sys.exit(1)
@@ -212,7 +208,6 @@ def is_frida_running(device_id):
         return True
     console.print("[red]❌ Frida server is NOT running.[/]")
     return False
-
 
 def start_frida_server(device_id):
     """
@@ -285,7 +280,8 @@ def select_package(packages):
         console.print("[bold red]⚠ Invalid selection. Try again.[/]")
 
 def select_frida_script():
-    """Lists all .js scripts in FRIDA_SCRIPTS_FOLDER and prompts user to select one."""
+    """Lists all .js scripts in FRIDA_SCRIPTS_FOLDER and prompts user to select one.
+    Entering 0 will skip script injection and launch the Frida shell without a script."""
     if not os.path.isdir(FRIDA_SCRIPTS_FOLDER):
         console.print(f"[red]❌ Scripts folder not found: {FRIDA_SCRIPTS_FOLDER}[/]")
         return None
@@ -301,15 +297,21 @@ def select_frida_script():
 
     for i, script_name in enumerate(scripts, 1):
         table.add_row(str(i), script_name)
-
+    # Add an option to skip script injection
+    table.add_row("0", "[italic]Skip script injection (launch Frida shell only)[/]")
     console.print(table)
 
     while True:
-        choice = Prompt.ask("[bold cyan]Enter the number of the script to use[/]").strip()
-        if choice.isdigit() and 1 <= int(choice) <= len(scripts):
-            return os.path.join(FRIDA_SCRIPTS_FOLDER, scripts[int(choice) - 1])
+        choice = Prompt.ask("[bold cyan]Enter the number of the script to use (0 to skip)[/]").strip()
+        if choice.isdigit():
+            choice_int = int(choice)
+            if choice_int == 0:
+                # User chose to skip script injection
+                return None
+            if 1 <= choice_int <= len(scripts):
+                return os.path.join(FRIDA_SCRIPTS_FOLDER, scripts[choice_int - 1])
         console.print("[bold red]⚠ Invalid selection. Try again.[/]")
-
+        
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -334,14 +336,15 @@ def main():
     packages = list_installed_packages(device_id)
     chosen_package = select_package(packages)
 
-    # 5. Select a local Frida script
+    # 5. Select a local Frida script (user can choose 0 to skip)
     script_path = select_frida_script()
-    if not script_path:
-        sys.exit(1)
 
     # 6. Launch Frida interactive shell
     console.print("[cyan]🚀 Launching Frida shell...[/]")
-    frida_cmd = ["frida", "-U", "-f", chosen_package, "-l", script_path]
+    if script_path:
+        frida_cmd = ["frida", "-U", "-f", chosen_package, "-l", script_path]
+    else:
+        frida_cmd = ["frida", "-U", "-f", chosen_package]
     subprocess.run(frida_cmd)
 
 if __name__ == "__main__":
