@@ -29,11 +29,6 @@ Before running FridaEX, ensure you have the following installed:
     brew install android-platform-tools  # macOS
     ```
 
-### **🔹 Clone the Repository**
-```sh
-git clone https://github.com/L0WK3Y-IAAN/FridaEX.git
-cd FridaEX
-```
 
 ### **🔹 Grant Execution Permissions**
 If running on **Linux/macOS**, you may need to grant execution permissions:
