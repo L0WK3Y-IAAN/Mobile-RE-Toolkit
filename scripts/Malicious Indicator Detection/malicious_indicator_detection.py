@@ -187,16 +187,15 @@ EXCLUDE_FROM_ENTROPY = ["smali", "xml"]  # Ignore Smali & XML files for entropy 
 
 
 def find_csv_files():
-    search_paths = [".", "src/output"]
+    search_path = "src/output"
     csv_files = set()
 
-    for path in search_paths:
-        if os.path.exists(path):
-            for root, _, files in os.walk(path):
-                for file in files:
-                    if file.lower().endswith(".csv") and "potential_indicators.csv" not in file:
-                        absolute_path = os.path.abspath(os.path.join(root, file))
-                        csv_files.add(absolute_path)
+    if os.path.exists(search_path):
+        for root, _, files in os.walk(search_path):
+            for file in files:
+                if file.lower().endswith(".csv") and "potential_indicators.csv" not in file:
+                    absolute_path = os.path.abspath(os.path.join(root, file))
+                    csv_files.add(absolute_path)
 
     return sorted(csv_files)
 
